@@ -48,3 +48,47 @@ div.eventLinks {
 div.event a {
   float: right;
 }
+
+.overlay-background {
+  background-color: black;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  z-index: 9;
+  opacity: 75%;
+}
+
+.overlay-cont {
+  background-color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  z-index: 10;
+  padding: 30px;
+  width: fit-content;
+  height: fit-content;
+}
+
+.overlay-ctrl {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.overlay-close {
+  border: none;
+  background-color: transparent;
+  font-size: 36px;
+  cursor: pointer;
+}
+
+.overlay-close:after {
+  display: inline-block;
+  content: "\00d7";
+}
