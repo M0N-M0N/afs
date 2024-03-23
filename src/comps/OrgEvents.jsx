@@ -1,33 +1,51 @@
 import {useEffect, useState, useRef} from "react";
-import {auth, db} from "../firebase_config";
+import {db} from "../firebase_config";
 import { getUserData } from "./globalFunctions";
-import {collection, getDocs, query, doc, addDoc, setDoc, deleteDoc, orderBy} from "firebase/firestore";
+import {collection, getDocs, query, doc, addDoc, setDoc, deleteDoc, orderBy, where} from "firebase/firestore";
 import {useNavigate} from "react-router-dom";
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import {Overlay} from "./Overlay";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import async from "async";
 import {Event} from "./Event";
 
 
 const OrgEvents = () => {
-    const hasUnmounted = useRef(false)
     const userId = getUserData("user")
     let nextId = 0
     const [eventRefresh, setEventRefresh] = useState(0);
     const [myevents, setEvents] = useState([]);
-    const [ismyOverlay, setIsMyOverlay] = useState(false)
+    const [ismyAddOverlay, setIsMyAddOverlay] = useState(false)
+    const [ismyUpdateOverlay, setismyUpdateOverlay] = useState(false)
     const navigate = useNavigate()
-    const [addORupdate, setaddORupdate] = useState()
+    const [thisDocId, setthisDocId ] = useState('')
+    const [thisEventName, setthisEventName ] = useState('')
+    const [thisEventDate, setthisEventDate ] = useState(new Date())
+    const [thisEvenFbDate, setthisEventFbName ] = useState(new Date())
+    const handleClickOverlay = (args,props, e) => {
+        if(args === "add") {
+            setIsMyAddOverlay(!ismyAddOverlay);
+        } else {
+            // console.log( tempDate)
+            setthisEventName(props.userdata.eventName)
+            setthisEventDate(props.userdata.eventDate.toDate())
+            setthisEventFbName(props.userdata.eventFbDate.toDate())
+            setthisDocId(args)
+            setismyUpdateOverlay(!ismyUpdateOverlay)
+        }
 
-    const handleClickOverlay = (args, e) => {
-        setIsMyOverlay(!ismyOverlay);
         return false
     }
     const handAddEvent = (EventName, EventDate, EventFbDate,e) => {
-        addEvents(EventName, EventDate, EventFbDate)
+        if (EventDate > EventFbDate) {
+            alert("Feeedback date can't be earlier than event date")
+        } else if (!EventName) {
+            alert("no event name")
+        }
+        else {
+            addEvents(EventName, EventDate, EventFbDate)
+        }
+
         return false
     }
 
@@ -37,7 +55,15 @@ const OrgEvents = () => {
     }
 
     const handleUpdateEvent = (id, e) => {
-        UpdateEventsDiv(id, e)
+        if (thisEventDate > thisEvenFbDate) {
+            alert("Feeedback date can't be earlier than event date")
+        } else if (!thisEventName) {
+            alert("no event name")
+        }
+        else {
+            updateEvent(id, e)
+        }
+
         return false
     }
 
@@ -53,7 +79,7 @@ const OrgEvents = () => {
                             onClick={(e) => handleDeleteEvent(e.target.getAttribute('data-key'), e)}>Delete
                     </button>
                     <button className="del-button" key="edit_{id}" data-key={id}
-                            onClick={(e)=>handleUpdateEvent(e.target.getAttribute('data-key'), e)} >Edit</button>
+                            onClick={(e)=>handleClickOverlay(id, props, e)} >Edit</button>
                     <button data-key={id} onClick={() =>navigate('/nominate', {state: {doc_id: id }})}>Nominate</button>
 
 
@@ -81,63 +107,29 @@ const OrgEvents = () => {
                 newFbDate={newFbDate}
                 fbDate={newEventFbDate}
                 handEvent={handAddEvent}
+                buttonName="Add"
 
             />
-
-            // <div className="addNewEventsCont">
-            //     Event Name:
-            //     <input type='text' placeholder='Enter event name' name="newEventName" id="newEventId"
-            //            onChange={e => setNewEventName(e.target.value)} value={newEventName}/>
-            //     <br/>
-            //     Event Date:
-            //     <DatePicker selected={newEventDate} onChange={(date) => setNewEventDate(date)}/>
-            //     <br/>
-            //     Deadline for Feedback:
-            //     <DatePicker selected={newEventFbDate} onChange={(date) => setNewEventFbDate(date)}/>
-            //     <br/>
-            //     <button type='button' onClick={(e) => handAddEvent(newEventName, newEventDate, newEventFbDate, e)}>Add
-            //         Event
-            //     </button>
-            // </div>
         )
     }
 
-    function UpdateEventsDiv(props) {
-        const [newEventName, setNewEventName] = useState('')
-        const [newEventDate, setNewEventDate] = useState(new Date())
-        const [newEventFbDate, setNewEventFbDate] = useState(new Date())
-
-        const newDate = (date) => setNewEventDate(date)
-        const newFbDate = (date) => setNewEventFbDate(date)
-        const newName = (e) => setNewEventName(e)
+    function UpdateEventsDiv() {
+        const newDate = (date) => setthisEventDate(date)
+        const newFbDate = (date) => setthisEventFbName(date)
+        const newName = (e) => setthisEventName(e)
 
         return (
             <Event
                 newName={newName}
-                eventName={newEventName}
+                eventName={thisEventName}
                 newDate={newDate}
-                eventDate={newEventDate}
+                eventDate={thisEventDate}
                 newFbDate={newFbDate}
-                fbDate={newEventFbDate}
-                handEvent={handAddEvent}
+                fbDate={thisEvenFbDate}
+                handEvent={handleUpdateEvent}
+                buttonName="Update"
 
             />
-
-            // <div className="addNewEventsCont">
-            //     Event Name:
-            //     <input type='text' placeholder='Enter event name' name="newEventName" id="newEventId"
-            //            onChange={e => setNewEventName(e.target.value)} value={newEventName}/>
-            //     <br/>
-            //     Event Date:
-            //     <DatePicker selected={newEventDate} onChange={(date) => setNewEventDate(date)}/>
-            //     <br/>
-            //     Deadline for Feedback:
-            //     <DatePicker selected={newEventFbDate} onChange={(date) => setNewEventFbDate(date)}/>
-            //     <br/>
-            //     <button type='button' onClick={(e) => handAddEvent(newEventName, newEventDate, newEventFbDate, e)}>Add
-            //         Event
-            //     </button>
-            // </div>
         )
     }
 
@@ -162,7 +154,6 @@ const OrgEvents = () => {
 
     const addEvents = (eventName, eventDate, eventFbDuration ) => {
         try {
-            nextId += 1;
             // console.log(eventName, eventDate, eventFbDuration,userId.uid)
 
             addDoc(collection(db, "Events"), {
@@ -180,21 +171,34 @@ const OrgEvents = () => {
                 })
                 .catch(err => console.log("there is an error", err));
 
-            setIsMyOverlay(!ismyOverlay);
+            setIsMyAddOverlay(!ismyAddOverlay);
 
         } catch (e) {
             console.error("Error adding document: ", e);
         }
-
-
     }
-    // const getEvents = async () => await getDocs(query(collection(db, 'Events')))
-    //     .then((events) => {
-    //         events.forEach(event => {
-    //             setEvents(prevState => [...prevState, {"eventKey":event.id , "eventName": event.data().event_name}]);
-    //
-    //         })
-    //     }).catch(err => console.log("there is an error", err));
+
+    const updateEvent = () => {
+        try {
+
+            setDoc(doc(db, "Events", thisDocId ), {
+                event_name: thisEventName,
+                event_date: thisEventDate,
+                event_fb_duration: thisEvenFbDate
+            }, {merge : true})
+                .then((callback)=>{
+                    console.log(callback)
+                    setEventRefresh( Math.random() )
+
+                })
+                .catch(err => console.log("there is an error", err));
+
+            setismyUpdateOverlay(!ismyUpdateOverlay);
+
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+    }
 
     useEffect(() => {
         (async function() {
@@ -203,20 +207,24 @@ const OrgEvents = () => {
                 const getEventsSnapshot = await getDocs(
                     query(
                         collection(db, 'Events', ),orderBy("event_timestamp", "desc")
-                ));
+                ),
+                    where("org", "==", userId.uid)
+                );
 
                 getEventsSnapshot.forEach((doc) => {
-                    // console.log(doc.id,!myevents.find(e => e.eventKey===doc.id))
-                    // if(!myevents.find(e => e.eventKey===doc.id) ) {
-                    //     setEvents(prevState => [...prevState, {"eventKey":doc.id , "eventName": doc.data().event_name}]);
-                    // }
-                    setEvents(prevState => [...prevState, {"eventKey":doc.id , "eventName": doc.data().event_name}]);
+                    setEvents(prevState => [...prevState, {
+                        "eventKey":doc.id ,
+                        "eventName": doc.data().event_name,
+                        "eventDate": doc.data().event_date,
+                        "eventFbDate": doc.data().event_fb_duration,
+                        "eventAttendee": doc.data().event_attendee
+                    }]);
                 })
             } catch (e) {
                 console.error(e);
             }
         })();
-        //console.log(myevents)
+
     }, [eventRefresh]);
 
 
@@ -225,9 +233,10 @@ const OrgEvents = () => {
 
         return (
             <div className="orgevents">
-                <Overlay isOpen={ismyOverlay} onClose={() => setIsMyOverlay(!ismyOverlay)} children={AddNewEventsDiv()}
-                         title="Add Event"/><Overlay isOpen={ismyOverlay} onClose={() => setIsMyOverlay(!ismyOverlay)} children={AddNewEventsDiv()}
-                                                     title="Add Event"/>
+                <Overlay isOpen={ismyAddOverlay} onClose={() => setIsMyAddOverlay(!ismyAddOverlay)} children={AddNewEventsDiv()}
+                         title="Add Event"/>
+                <Overlay isOpen={ismyUpdateOverlay} onClose={() => setismyUpdateOverlay(!ismyUpdateOverlay)} children={UpdateEventsDiv()}
+                         title="Update Event"/>
                 <h1>Events</h1>
                 <div className="eventCont">
                     {
@@ -240,18 +249,12 @@ const OrgEvents = () => {
                     }
                 </div>
                 <br/><br/><br/>
-                <button className="edit-button" key="add_{id}" onClick={(e) => handleClickOverlay("Add", e)}>Add
+                <button className="edit-button" key="add_{id}" onClick={(e) => handleClickOverlay("add", e)}>Add
                 </button>
 
             </div>
         )
     }
-    // useEffect(() => {
-    //     //getEvents()
-    //     hasUnmounted.current = true;
-    //     console.log(hasUnmounted)
-    //
-    // }, []);
 
     return (
         <GenerateEvents />
