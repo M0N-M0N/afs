@@ -8,10 +8,13 @@ export function Overlay({ isOpen, onClose, children, title }) {
                         <div className='overlay-cont'>
 
                             <div className='overlay-ctrl'>
-                                {title}
+                                <div className="overlay-ctrl-title">{title}</div>
                                 {/*<button onClick={onClose} type="button" className='overlay-close' />*/}
                             </div>
-                            {children}
+                            <div className="overlay-ctrl-cont">
+                                {children}
+
+                            </div>
                         </div>
                     </div>
                 ): null

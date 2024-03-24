@@ -12,7 +12,6 @@ import {Event} from "./Event";
 
 const OrgEvents = () => {
     const userId = getUserData("user")
-    let nextId = 0
     const [eventRefresh, setEventRefresh] = useState(0);
     const [myevents, setEvents] = useState([]);
     const [ismyAddOverlay, setIsMyAddOverlay] = useState(false)
@@ -50,7 +49,10 @@ const OrgEvents = () => {
     }
 
     const handleDeleteEvent = (id, e) => {
-        delEvents(id)
+        if (window.confirm('Are you sure you wish to delete this item?')) {
+            delEvents(id)
+        }
+
         return false
     }
 

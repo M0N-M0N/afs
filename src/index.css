@@ -77,8 +77,18 @@ div.event a {
 
 .overlay-ctrl {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
+}
+
+.overlay-ctrl-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.overlay-ctrl-cont {
+  display: flex;
 }
 
 .overlay-close {
@@ -91,4 +101,36 @@ div.event a {
 .overlay-close:after {
   display: inline-block;
   content: "\00d7";
+}
+
+.event-cont {
+  display: flow-root;
+}
+.event-label-row {
+  display: flex;
+  margin-bottom: 5px;
+}
+.event-label-name {
+  width: 200px;
+  float: left;
+}
+
+.event-label-input {
+  width: 200px;
+  float: left;
+}
+
+.event-cont-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0px 10px 0px;
+
+}
+
+.event-cont-button button {
+  padding: 5px 10px;
+  border-width: thin;
+  border-radius: 15px;
+
 }
