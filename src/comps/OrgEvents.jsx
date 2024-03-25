@@ -204,13 +204,14 @@ const OrgEvents = () => {
 
     useEffect(() => {
         (async function() {
+            console.log(userId.uid)
             try {
                 setEvents([])
+                const collection_ref =collection(db, 'Events', )
                 const getEventsSnapshot = await getDocs(
                     query(
-                        collection(db, 'Events', ),orderBy("event_timestamp", "desc")
-                ),
-                    where("org", "==", userId.uid)
+                        collection_ref, where("org_id", "==", userId.uid)
+                    )
                 );
 
                 getEventsSnapshot.forEach((doc) => {
